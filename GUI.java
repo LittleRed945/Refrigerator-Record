@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Date;
-
+import lib.RecordSystem;
 public class GUI extends JFrame {
     private JLabel topLabel;
     private JPanel topPanel;//頂部:顯示方式、排序方式

@@ -1,4 +1,4 @@
-package lib.system;
+package lib;
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
 

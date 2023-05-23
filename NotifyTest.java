@@ -1,6 +1,6 @@
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
-import lib.system.Notify;
+import lib.Notify;
 class NotifyTest{
     public static void main(String[] args) throws AWTException {
         if (SystemTray.isSupported()) {
