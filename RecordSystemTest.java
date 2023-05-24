@@ -4,7 +4,7 @@ import java.util.Date;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import java.lang.IndexOutOfBoundsException;
-
+import java.io.IOException;
 class RecordSystemTest{
     private static final String sourceFilePath = "test/icon/test.jpg";
     public static void main(String[] args) {
@@ -48,8 +48,12 @@ class RecordSystemTest{
         System.out.println();
 
         //uploadPhoto
-
-        recordSystem.uploadPhoto(sourceFilePath);
+        try{
+            recordSystem.uploadPhoto(sourceFilePath);
+        }catch(IOException iOException){
+            System.out.println(iOException.getMessage());
+        }
+        
             
     }
     

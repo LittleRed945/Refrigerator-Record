@@ -1,9 +1,11 @@
 package lib;
 import java.util.ArrayList;
 import java.util.Date;
+import  java.util.concurrent.TimeUnit ;
 import javax.swing.Icon;
 import java.lang.IndexOutOfBoundsException;
 import java.io.IOException;
+import java.awt.AWTException;
 public class RecordSystem extends Notify{
     private static final String destinationDirectory = "icon/";
     private ArrayList<Food> foods ;
@@ -34,14 +36,32 @@ public class RecordSystem extends Notify{
         }
         return foods.get(index);
     }
-    public void uploadPhoto(String sourceFilePath){
+    public String uploadPhoto(String sourceFilePath)  throws IOException{
          try {
-            photoUploader.uploadPhoto(sourceFilePath, destinationDirectory);
+            String filename = photoUploader.uploadPhoto(sourceFilePath, destinationDirectory);
             System.out.println("Photo uploaded successfully!");
+            return filename;
         } catch (IOException e) {
             System.out.println("Failed to upload photo: " + e.getMessage());
+            throw new IOException(e.getMessage());
         }
         
     }
+    public void expiriedNotify(){
+        try{
+            Date current_time= new Date();
+            for(int i=0;i<foods.size();++i){
+                long diffInMillies = foods.get(i).getExpiryDate().getTime() - current_time.getTime();
+                long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+                if(diff <= 1 && diff >= 0){
+                    String msg = "Your "+foods.get(i).getName() + "is about to expiried!";
+                    windowsNotify(msg);
+                }
+            }
+        }catch(AWTException aWTException){  
+            System.out.println(aWTException.getMessage());
+        }
+    }
+    
     //上傳到固定的位置?
 }

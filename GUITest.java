@@ -1,4 +1,3 @@
-
 import javax.swing.JFrame;
 public class GUITest {
     public static void main(String[] args) {

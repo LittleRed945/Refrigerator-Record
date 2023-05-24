@@ -24,7 +24,7 @@ public class PhotoUploader {
         }
     }
 
-    public static void uploadPhoto(String sourceFilePath, String destinationDirectory) throws IOException {
+    public static String uploadPhoto(String sourceFilePath, String destinationDirectory) throws IOException {
         File sourceFile = new File(sourceFilePath);
 
         if (!sourceFile.exists()) {
@@ -42,8 +42,8 @@ public class PhotoUploader {
         if (!destinationDir.isDirectory()) {
             throw new IOException("Destination path is not a directory.");
         }
-
-        File destinationFile = new File(destinationDir, sourceFile.getName());
+        String fileName = sourceFile.getName();
+        File destinationFile = new File(destinationDir, fileName);
 
         try (InputStream inputStream = Files.newInputStream(sourceFile.toPath());
              OutputStream outputStream = new FileOutputStream(destinationFile)) {
@@ -55,5 +55,6 @@ public class PhotoUploader {
                 outputStream.write(buffer, 0, bytesRead);
             }
         }
+        return fileName;
     }
 }
