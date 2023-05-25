@@ -1,7 +1,9 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimerTask;
 import java.util.Timer;
@@ -11,6 +13,7 @@ import java.util.Formatter;
 import java.util.FormatterClosedException;
 import lib.RecordSystem;
 import lib.Food;
+import lib.ImageFilter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.io.File;
@@ -38,33 +41,32 @@ public class GUI extends JFrame {
     private JTextField newItemType;
     private JTextField newItemDate;
     private JTextField newItemIcon;
+    private ArrayList<String> photoNames;
     private JLabel bottomLabel;
     private JPanel bottomPanel;//底部:日期、設置、新增
     private JButton showByButton;//顯示方式切換
     private JButton sortByButton;//排序方式
     private JButton createItemButton;//按鈕:新增物品
+    private JButton uploadPhotoButton;//按鈕:上傳照片
     private JTextField timeField;//現在日期
     private RecordSystem recordSystem;//系統
      private int item_counts;
     public GUI() {
         recordSystem = new RecordSystem();
         item_counts = 0;
-        
+        photoNames = new ArrayList<String>();
         //每隔1小時判斷是否有東西要過期
         Timer t = new Timer();
         long delay = 0L; 
         long period = 3600000L;
-        t.schedule(new TimerTask() {
-            @Override public void run() {
-                recordSystem.expiriedNotify();
-            }
-        }, 0L, period);
+       
 
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new GridLayout(8, 1));
         ActionListener display = new displaySwitcher();
         ActionListener sort = new sortSwitcher();
         ActionListener create = new createAction();
+        ActionListener upload = new uploadAction();
         //------top------
         topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout());
@@ -104,6 +106,8 @@ public class GUI extends JFrame {
         newItemType=new JTextField();
         newItemDate=new JTextField("2023/05/24");
         newItemIcon=new JTextField();
+        
+       
         createLabel = new JLabel("新增物品到冰箱:");
         createPanel = new JPanel();
         createPanel.setLayout(new GridLayout(2,4));
@@ -115,17 +119,23 @@ public class GUI extends JFrame {
         createPanel.add(newItemType);
         createPanel.add(newItemDate);
         createPanel.add(newItemIcon);
-        createItemButton = new JButton("新增");
-        createItemButton.setPreferredSize(new Dimension(40, 40));
-        createItemButton.addActionListener(create);
         //------bottom------
         bottomLabel = new JLabel("底部(test)");
         bottomPanel = new JPanel();
-        timeField = new JTextField();
+        Date nowTime = new Date();
+        timeField = new JTextField(nowTime.toString());
         timeField.setEditable(false);
         timeField.setText("現在日期:");
+        createItemButton = new JButton("新增紀錄");
+        createItemButton.setPreferredSize(new Dimension(20, 20));
+        createItemButton.addActionListener(create);
+        uploadPhotoButton = new JButton("上傳照片");
+        uploadPhotoButton.setPreferredSize(new Dimension(20, 20));
+        uploadPhotoButton.addActionListener(upload);
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.add(timeField, BorderLayout.WEST);
+        bottomPanel.add(createItemButton);
+        bottomPanel.add(uploadPhotoButton);
         //------帶進outer------
         outerPanel.add(topPanel);
         outerPanel.add(itemLabel);
@@ -133,7 +143,7 @@ public class GUI extends JFrame {
         outerPanel.add(scroller);
         outerPanel.add(createLabel);
         outerPanel.add(createPanel);
-        outerPanel.add(createItemButton);
+        //outerPanel.add(createItemButton);
         outerPanel.add(bottomLabel);
         outerPanel.add(bottomPanel);
         //帶進GUI------
@@ -152,10 +162,15 @@ public class GUI extends JFrame {
                 }
             }
         }
-       
+        t.schedule(new TimerTask() {
+            @Override public void run() {
+                recordSystem.expiriedNotify();
+            }
+        }, 0L, period);
     }
     public void createFood( String name, String type, String date_str, String icon_path){
         try{
+            System.out.println("PATH:" + icon_path);
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd");
                 Date date = simpleDateFormat.parse(date_str);
                 String filename = recordSystem.uploadPhoto(icon_path);
@@ -197,7 +212,6 @@ public class GUI extends JFrame {
     }
     private void writeFile(String name, String type, String date_str, String icon_path){
          try (Formatter output = new Formatter(RECORDS_PATH)) {
-           
                 try {
                 // output new record to file; assumes valid input
                 output.format("%s %s %s %s%n", name, type, date_str, icon_path);
@@ -205,14 +219,11 @@ public class GUI extends JFrame {
                 catch (NoSuchElementException elementException) {
                 System.err.println("Invalid input. Please try again.");
                 } 
-
-                
-            
-        }
         catch (SecurityException | FileNotFoundException | 
             FormatterClosedException e) {
             e.printStackTrace();
         } 
+    }
     }
     private class displaySwitcher implements ActionListener //切換顯示方式
     {
@@ -230,7 +241,7 @@ public class GUI extends JFrame {
         }
     }
 
-    private class createAction implements ActionListener //新增
+    private class createAction implements ActionListener //新增紀錄
     {
         // TODO
         public void actionPerformed(ActionEvent e) {
@@ -242,4 +253,29 @@ public class GUI extends JFrame {
             writeFile(name, type, date_str, icon_path);
         }
     }
+    private class uploadAction implements ActionListener //新增
+    {
+        // TODO
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser();//宣告filechooser 
+            fileChooser.addChoosableFileFilter(new ImageFilter());//只能選照片
+            fileChooser.setAcceptAllFileFilterUsed(false);//只能選照片
+            int returnValue = fileChooser.showOpenDialog(null);//叫出filechooser 
+            if (returnValue == JFileChooser.APPROVE_OPTION) //判斷是否選擇檔案 
+            { 
+                
+                
+                try{
+                    File selectedFile = fileChooser.getSelectedFile();//指派給File 
+                
+                System.out.println(selectedFile.getName()); //印出檔名 
+                    recordSystem.uploadPhoto(selectedFile.getPath());//上傳照片
+                }catch (IOException | SecurityException | 
+                    FormatterClosedException err) {
+                    err.printStackTrace();
+                } 
+            } 
+        }
+    }
+
 }
