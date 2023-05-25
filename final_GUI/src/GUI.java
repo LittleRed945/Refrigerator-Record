@@ -17,6 +17,14 @@ public class GUI extends JFrame {
     private JButton sortByButton;//排序方式
     private JButton createItemButton;//按鈕:新增物品
     private JTextField timeField;//現在日期
+    JTextField titleName=new JTextField("名稱");
+    JTextField titleType=new JTextField("類型");
+    JTextField titleDate=new JTextField("有效日期");
+    JTextField titleIcon=new JTextField("圖片");
+    JTextField newItemName=new JTextField();
+    JTextField newItemType=new JTextField();
+    JTextField newItemDate=new JTextField();
+    JTextField newItemIcon=new JTextField();
 
     public GUI() {
         JPanel outerPanel = new JPanel();
@@ -38,18 +46,11 @@ public class GUI extends JFrame {
         itemPanel = new JPanel();
         itemPanel.setLayout(new GridLayout(3,6));
         //------create------
-        JTextField titleName=new JTextField("名稱");
-        JTextField titleType=new JTextField("類型");
-        JTextField titleDate=new JTextField("有效日期");
-        JTextField titleIcon=new JTextField("圖片");
         titleName.setEditable(false);
         titleType.setEditable(false);
         titleDate.setEditable(false);
         titleIcon.setEditable(false);
-        JTextField newItemName=new JTextField();
-        JTextField newItemType=new JTextField();
-        JTextField newItemDate=new JTextField();
-        JTextField newItemIcon=new JTextField();
+
         createLabel = new JLabel("新增物品到冰箱:");
         createPanel = new JPanel();
         createPanel.setLayout(new GridLayout(2,4));
@@ -82,10 +83,25 @@ public class GUI extends JFrame {
         add(outerPanel);
 
     }
+    public void createSystem()
+    {
+
+    }
+    public void createFood()
+    {
+        Food newFood = new Food();
+        newFood.setName(newItemName.getText());
+        //newFood.setExpiryDate(newItemDate.getText());
+
+    }
+    public void editFood()
+    {}
+    public void deleteFood()
+    {}
+
 
     private class displaySwitcher implements ActionListener //切換顯示方式
     {
-        // TODO
         public void actionPerformed(ActionEvent e) {
             showByButton.setText("以" + "表格" + "顯示");
         }
@@ -93,9 +109,14 @@ public class GUI extends JFrame {
 
     private class sortSwitcher implements ActionListener //切換排序方式
     {
-        // TODO
         public void actionPerformed(ActionEvent e) {
             sortByButton.setText("排序依據：" + "類型");
+        }
+    }
+    private class createFoodButton implements ActionListener //切換顯示方式
+    {
+        public void actionPerformed(ActionEvent e) {
+            showByButton.setText("以" + "表格" + "顯示");
         }
     }
 }
