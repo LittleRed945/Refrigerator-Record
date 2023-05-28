@@ -127,15 +127,15 @@ public class GUI extends JFrame {
         timeField.setEditable(false);
         timeField.setText("現在日期:");
         createItemButton = new JButton("新增紀錄");
-        createItemButton.setPreferredSize(new Dimension(20, 20));
+        createItemButton.setSize(20, 20);
         createItemButton.addActionListener(create);
         uploadPhotoButton = new JButton("上傳照片");
-        uploadPhotoButton.setPreferredSize(new Dimension(20, 20));
+        uploadPhotoButton.setSize(20, 20);
         uploadPhotoButton.addActionListener(upload);
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.add(timeField, BorderLayout.WEST);
-        bottomPanel.add(createItemButton);
-        bottomPanel.add(uploadPhotoButton);
+        bottomPanel.add(createItemButton, BorderLayout.CENTER);
+        bottomPanel.add(uploadPhotoButton, BorderLayout.EAST);
         //------帶進outer------
         outerPanel.add(topPanel);
         outerPanel.add(itemLabel);
@@ -218,13 +218,14 @@ public class GUI extends JFrame {
                 } 
                 catch (NoSuchElementException elementException) {
                 System.err.println("Invalid input. Please try again.");
-                } 
+                }
+        } 
         catch (SecurityException | FileNotFoundException | 
             FormatterClosedException e) {
             e.printStackTrace();
         } 
     }
-    }
+    
     private class displaySwitcher implements ActionListener //切換顯示方式
     {
         // TODO
