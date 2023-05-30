@@ -46,7 +46,7 @@ public class GUI extends JFrame {
     private JTextField newItemName;
     private JTextField newItemType;
     private JTextField newItemDate;
-    private JTextField newItemIcon;
+    private JList newItemIcon;
     private ArrayList<String> photoNames;
     private JLabel bottomLabel;
     private JPanel bottomPanel;//底部:日期、設置、新增
@@ -62,13 +62,15 @@ public class GUI extends JFrame {
     private String displayMethod = "圖片";//顯示方式
     private String sortMethod = "類型";//排序方式
     private int item_counts;
-    private Food[] allFood={null};
+    ArrayList<Food> foodList;
+    private Food[] allFood;
     Object[][] testData = {
-            {"John", 25, "USA"},
-            {"Emily", 30, "Canada"},
-            {"David", 35, "UK"},
-            {"Sophia", 28, "Australia"}
+            {"蘋果", "水果", "2023-5-27"},
+            {"牛奶", "飲料", "2023-5-30"},
+            {"蘋果汁", "飲料", "2023-5-28"},
+            {"香蕉", "水果", "2023-5-29"}
     };
+
     private JPanel outerPanel;
 
     public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -85,6 +87,9 @@ public class GUI extends JFrame {
         Timer t = new Timer();
         long delay = 0L;
         long period = 3600000L;
+//        String[][] foodList={
+//                {allFood[0].getName(),allFood[0].getType(),dateFormat.format(allFood[0].getExpiryDate())}
+//        };
 
 
         outerPanel.setLayout(new GridLayout(8, 1));
@@ -104,20 +109,19 @@ public class GUI extends JFrame {
         topPanel.add(sortByButton, BorderLayout.EAST);
 
         //------item------
-        itemTable=new JTable(testData,tableColumnNames);
+        itemTable = new JTable(testData, tableColumnNames);
 
         itemLabel = new JLabel("冰箱內:");
         itemPanel = new JPanel();
 
-        itemPanel.setLayout(new GridLayout(ITEM_ROW , ITEM_COLUMN));
+        itemPanel.setLayout(new GridLayout(ITEM_ROW, ITEM_COLUMN));
         itemFields = new JLabel[ITEM_ROW * ITEM_COLUMN];
         icons = new ImageIcon[ITEM_ROW];
         //導入item圖片
-        for(int i =0 ;itemFields[i]!=null;i++)
-        {
+        for (int i = 0; itemFields[i] != null; i++) {
             itemPanel.add(itemFields[i]);
         }
-        itemViewer=itemPanel;
+        itemViewer = itemPanel;
         viewPanel = new JPanel();
         viewPanel.add(itemViewer);
         scrollPane = new JScrollPane(viewPanel);
@@ -146,7 +150,7 @@ public class GUI extends JFrame {
         newItemName = new JTextField();
         newItemType = new JTextField();
         newItemDate = new JTextField("yyyy-MM-dd");
-        newItemIcon = new JTextField();
+        newItemIcon = new JList<Object>();
 
         createLabel = new JLabel("新增物品到冰箱:");
         createPanel = new JPanel();
@@ -188,6 +192,7 @@ public class GUI extends JFrame {
             }
         }, 0L, period);
     }
+
     //重整
     private void updateAll() {
         while (true) {
@@ -209,17 +214,17 @@ public class GUI extends JFrame {
         remove(outerPanel);
         scrollPane.removeAll();
         itemPanel.removeAll();
-        outerPanel=new JPanel();
+        outerPanel = new JPanel();
         outerPanel.setLayout(new GridLayout(8, 1));
         outerPanel.add(topPanel);
         outerPanel.add(itemLabel);
         switch (displayMethod) {
             case "圖片":
-                scrollPane=new JScrollPane(itemPanel);
-            break;
+                scrollPane = new JScrollPane(itemPanel);
+                break;
             case "表格":
-                scrollPane=new JScrollPane(itemTable);
-            break;
+                scrollPane = new JScrollPane(itemTable);
+                break;
         }
         outerPanel.add(scrollPane);
         outerPanel.add(createLabel);
@@ -245,17 +250,15 @@ public class GUI extends JFrame {
             icon = new ImageIcon(newimg);
             recordSystem.createFood(name, type, icon, date);
             Food item = recordSystem.getFood(item_counts);
-            allFood[item_counts]=item;
+            allFood[item_counts] = item;
 //            itemFields[item_counts * ITEM_COLUMN].setText(item.getName());
             //itemfields[item_counts*3 + 1] = gettype
 //            itemFields[item_counts * ITEM_COLUMN + 2].setText(simpleDateFormat.format(item.getExpiryDate()));
             icons[item_counts] = item.getIcon();
             itemFields[item_counts].setIcon(icons[item_counts]);
 //            if (item_counts + 1 < ITEM_ROW) {
-                item_counts++;
+            item_counts++;
 //            }
-
-
         } catch (ParseException parseException) {
             System.out.println(parseException.getMessage());
         } catch (IOException iOException) {
@@ -278,12 +281,12 @@ public class GUI extends JFrame {
         }
     }
 
-    private void writeFile(String name, String type,  String icon_path,String date_str) throws FileNotFoundException {
+    private void writeFile(String name, String type, String icon_path, String date_str) throws FileNotFoundException {
         System.out.println("嘗試寫入檔案");
         try (Formatter output = new Formatter(RECORDS_PATH)) {
             try {
                 // output new record to file; assumes valid input
-                output.format("%s %s %s %s%n", name, type,  icon_path,date_str);
+                output.format("%s %s %s %s%n", name, type, icon_path, date_str);
             } catch (NoSuchElementException elementException) {
                 System.err.println("Invalid input. Please try again.");
             } catch (SecurityException |
@@ -311,6 +314,7 @@ public class GUI extends JFrame {
         }
         updateAll();
     }
+
     private void sortSwitcher()//切換排序方式
     {
         // TODO
@@ -328,43 +332,44 @@ public class GUI extends JFrame {
                 System.out.println("切到以類型排序");
                 break;
         }
-        for(int i = 1;allFood[i] != null;i++)
-        {
-            for(int j = 0; j<i;j++)
-            {
-                switch (sortMethod) {
-                    case "類型":
-                        if (allFood[i].getType()!=allFood[j].getType())
-                        {
-
-                        }
-                        break;
-                    case "有效日期":
-                        if (allFood[i].getExpiryDate()!=allFood[j].getExpiryDate())
-                        {
-
-                        }
-                        break;
-                }
-            }
-        }
+        recordSystem.sortFood(sortMethod);
+//        for(int i = 1;allFood[i] != null;i++)
+//        {
+//            for(int j = 0; j<i;j++)
+//            {
+//                switch (sortMethod) {
+//                    case "類型":
+//                        if (allFood[i].getType()!=allFood[j].getType())
+//                        {
+//
+//                        }
+//                        break;
+//                    case "有效日期":
+//                        if (allFood[i].getExpiryDate()!=allFood[j].getExpiryDate())
+//                        {
+//
+//                        }
+//                        break;
+//                }
+//            }
+//        }
     }
 
     private void createAction() throws FileNotFoundException //新增紀錄
     {
         // TODO
-            String name = newItemName.getText();
-            String type = newItemType.getText();
-            String date_str = newItemDate.getText();
-            String icon_path = newItemIcon.getText();
-            createFood(name, type, date_str, icon_path);
-            writeFile(name, type, date_str, icon_path);
+        String name = newItemName.getText();
+        String type = newItemType.getText();
+        String date_str = newItemDate.getText();
+        String icon_path = null;
+//            String icon_path = newItemIcon.getText();
+        createFood(name, type, date_str, icon_path);
+        writeFile(name, type, date_str, icon_path);
         try {
             readFile();
         } catch (NoSuchFileException e) {
             System.out.println("An error occurred.");
         }
-
     }
 
     private void uploadAction()//新增
