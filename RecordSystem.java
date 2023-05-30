@@ -6,6 +6,7 @@ import javax.swing.Icon;
 import java.lang.IndexOutOfBoundsException;
 import java.io.IOException;
 import java.awt.AWTException;
+import java.util.Comparator;
 public class RecordSystem extends Notify{
     private static final String destinationDirectory = "icon/";
     private ArrayList<Food> foods ;
@@ -16,9 +17,10 @@ public class RecordSystem extends Notify{
         photoUploader = new PhotoUploader();
     }
     
-    public void createFood(String name, Icon icon, Date expiryDate){
-        Food food = new Food(name, icon, expiryDate);
+    public void createFood(String name, String type, Icon icon, Date expiryDate){
+        Food food = new Food(name, type, icon, expiryDate);
         foods.add(food);
+        System.out.println("create food success!!");
     }
     public void editFood(String name, Icon icon, Date expiryDate, int index){
         Food food = foods.get(index);
@@ -30,11 +32,17 @@ public class RecordSystem extends Notify{
     public void deleteFood(int index){
         foods.remove(index);
     }
+    public void clearFoods(){
+        foods.clear();
+    }
     public Food getFood(int index) throws IndexOutOfBoundsException{
         if(foods.size() <= index){
             throw new IndexOutOfBoundsException("Index " + index + " is out of bounds!");
         }
         return foods.get(index);
+    }
+    public ArrayList<Food> getFoods() throws IndexOutOfBoundsException{
+        return foods;
     }
     public String uploadPhoto(String sourceFilePath)  throws IOException{
          try {
@@ -52,9 +60,9 @@ public class RecordSystem extends Notify{
             Date current_time= new Date();
             for(int i=0;i<foods.size();++i){
                 long diffInMillies = foods.get(i).getExpiryDate().getTime() - current_time.getTime();
-                long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+                long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
                 if(diff <= 1 && diff >= 0){
-                    String msg = "Your "+foods.get(i).getName() + "is about to expiried!";
+                    String msg = "Your "+foods.get(i).getName() + " is about to expiried!";
                     windowsNotify(msg);
                 }
             }
@@ -63,5 +71,17 @@ public class RecordSystem extends Notify{
         }
     }
     
-    //上傳到固定的位置?
+   public void sortFood(String sortMethod)
+    {
+        Food tempFood;
+        switch (sortMethod) {
+            case "類型":
+                foods.sort(Comparator.comparing(Food::getType));
+                break;
+            case "有效日期":
+                foods.sort(Comparator.comparing(Food::getExpiryDate));
+                break;
+        }
+        
+    }
 }

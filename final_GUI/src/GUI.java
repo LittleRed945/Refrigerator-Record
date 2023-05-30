@@ -372,24 +372,28 @@ public class GUI extends JFrame {
         }
     }
 
-    private void uploadAction()//新增
+   private class uploadAction implements ActionListener //新增
     {
         // TODO
-
-        JFileChooser fileChooser = new JFileChooser();//宣告filechooser
-        fileChooser.addChoosableFileFilter(new ImageFilter());//只能選照片
-        fileChooser.setAcceptAllFileFilterUsed(false);//只能選照片
-        int returnValue = fileChooser.showOpenDialog(null);//叫出filechooser
-        if (returnValue == JFileChooser.APPROVE_OPTION) //判斷是否選擇檔案
-        {
-            try {
-                File selectedFile = fileChooser.getSelectedFile();//指派給File
-                System.out.println(selectedFile.getName()); //印出檔名
-                recordSystem.uploadPhoto(selectedFile.getPath());//上傳照片
-            } catch (IOException | SecurityException |
-                     FormatterClosedException err) {
-                err.printStackTrace();
-            }
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser();//宣告filechooser 
+            fileChooser.addChoosableFileFilter(new ImageFilter());//只能選照片
+            fileChooser.setAcceptAllFileFilterUsed(false);//只能選照片
+            int returnValue = fileChooser.showOpenDialog(null);//叫出filechooser 
+            if (returnValue == JFileChooser.APPROVE_OPTION) //判斷是否選擇檔案 
+            { 
+                
+                
+                try{
+                    File selectedFile = fileChooser.getSelectedFile();//指派給File 
+                
+                System.out.println(selectedFile.getName()); //印出檔名 
+                    recordSystem.uploadPhoto(selectedFile.getPath());//上傳照片
+                }catch (IOException | SecurityException | 
+                    FormatterClosedException err) {
+                    err.printStackTrace();
+                } 
+            } 
         }
     }
 

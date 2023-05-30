@@ -19,7 +19,7 @@ class RecordSystemTest{
 
         //createFood
         System.out.println("Create Food:");
-        recordSystem.createFood("01", icon, new Date());
+        recordSystem.createFood("01", "meat", icon, new Date());
         try{
             System.out.println(recordSystem.getFood(0).toString());
         }catch(IndexOutOfBoundsException indexOutOfBoundsException){
