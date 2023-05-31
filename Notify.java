@@ -4,6 +4,7 @@ import java.awt.TrayIcon.MessageType;
 
 abstract public class Notify{
      public void windowsNotify(String msg) throws AWTException {
+         System.out.println("expiredNotify");
         //Obtain only one instance of the SystemTray object
         SystemTray tray = SystemTray.getSystemTray();
 

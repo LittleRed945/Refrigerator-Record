@@ -5,10 +5,10 @@ import javax.swing.Icon;
 public class Food {
     private String name;
     private String type;
-    private Icon icon;
+    private String icon;
     private Date expiryDate;
     
-    public Food(String name, String type, Icon icon, Date expiryDate){
+    public Food(String name, String type, String  icon, Date expiryDate){
         this.name = name;
         this.type = type;
         this.icon = icon;
@@ -30,11 +30,11 @@ public class Food {
         this.type = type;
     }
 
-    public Icon getIcon() {
+    public String  getIcon() {
         return icon;
     }
 
-    public void setIcon(Icon icon) {
+    public void setIcon(String  icon) {
         this.icon = icon;
     }
 

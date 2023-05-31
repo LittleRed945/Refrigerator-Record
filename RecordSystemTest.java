@@ -9,7 +9,7 @@ class RecordSystemTest{
     private static final String sourceFilePath = "test/icon/test.jpg";
     public static void main(String[] args) {
         RecordSystem recordSystem = new RecordSystem();
-        ImageIcon icon = new ImageIcon("icon/test.jpg");
+        String  icon = "test.jpg";
         try{
            System.out.println(recordSystem.getFood(0).toString());
         }catch(IndexOutOfBoundsException indexOutOfBoundsException){

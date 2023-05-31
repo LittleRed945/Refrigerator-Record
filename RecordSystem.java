@@ -17,12 +17,12 @@ public class RecordSystem extends Notify{
         photoUploader = new PhotoUploader();
     }
     
-    public void createFood(String name, String type, Icon icon, Date expiryDate){
+    public void createFood(String name, String type, String  icon, Date expiryDate){
         Food food = new Food(name, type, icon, expiryDate);
         foods.add(food);
         System.out.println("create food success!!");
     }
-    public void editFood(String name, Icon icon, Date expiryDate, int index){
+    public void editFood(String name, String  icon, Date expiryDate, int index){
         Food food = foods.get(index);
         food.setName(name);
         food.setIcon(icon);
@@ -58,6 +58,7 @@ public class RecordSystem extends Notify{
     public void expiriedNotify(){
         try{
             Date current_time= new Date();
+
             for(int i=0;i<foods.size();++i){
                 long diffInMillies = foods.get(i).getExpiryDate().getTime() - current_time.getTime();
                 long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
