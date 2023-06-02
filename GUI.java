@@ -151,6 +151,7 @@ public class GUI extends JFrame {
         newItemType = new JTextField();
         newItemDate = new JTextField("yyyy/MM/dd");
         newItemIcon = new JList<String>();
+        newItemIcon.setCellRenderer(new ItemIconRenderer());
         iconScrollPane = new JScrollPane(newItemIcon);
 
         createLabel = new JLabel("新增物品到冰箱:");
