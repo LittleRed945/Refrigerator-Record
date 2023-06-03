@@ -405,10 +405,23 @@ public class GUI extends JFrame {
         }
     }
 
+    private void deletePhotoFile(String photoName){
+         File file = new File(DESTINATION_DIR+photoName);
+ 
+        boolean result = file.delete();
+        if (result) {
+            System.out.println("File is successfully deleted.");
+        }
+        else {
+            System.out.println("File deletion failed.");
+        }
+    }
     private void deletePhoto()  {
-
-        if(photoList!=null){
-            photoList.remove(newItemIcon.getSelectedIndex());
+        int photoIndex = newItemIcon.getSelectedIndex();
+        if(photoList!=null && photoIndex >= 0){
+            String photoName = photoList.get(photoIndex);
+            deletePhotoFile(photoName);
+            photoList.remove(photoIndex);
             try{
                 writePhotoList();
                 readPhotoList();
@@ -420,7 +433,7 @@ public class GUI extends JFrame {
     }
 
     private Icon createIcon(String icon_name){
-        ImageIcon icon = new ImageIcon(DESTINATION_DIR + icon_name);
+        ImageIcon icon = new ImageIcon(DESTINATION_DIR + "/" + icon_name);
         Image image = icon.getImage(); // transform it
         Image newimg = image.getScaledInstance(40  , 40, java.awt.Image.SCALE_SMOOTH);
         icon = new ImageIcon(newimg);
