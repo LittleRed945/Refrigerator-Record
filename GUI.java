@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 import java.awt.event.ActionListener;
@@ -29,8 +30,10 @@ import lib.ImageFilter;
 
 public class GUI extends JFrame {
     private static final String DESTINATION_DIR = "icon/";
-    private static final String RECORDS_PATH = "record/records.txt";
-    private static final String PHOTOLIST_PATH = "record/photoList.txt";
+    private static final String RECORDS_DIR = "record";
+    private static final String RECORDS_FILE = "record/records.txt";
+    private static final String PHOTOLIST_DIR = "record";
+    private static final String PHOTOLIST_FILE = "record/photoList.txt";
     private static final int ITEM_ROW = 3; // 顯示的 row 數量
     private static final int ITEM_COLUMN = 4;// 顯示的 column 數量
 
@@ -55,12 +58,14 @@ public class GUI extends JFrame {
     private JList<String> newItemIcon;
     private JLabel bottomLabel;
     private JPanel bottomPanel;//底部:日期、設置、新增
+    private JPanel photoPanel;//顯示照片處理相關的按鈕
     private JButton showByButton;//顯示方式切換
 
     private JButton sortByButton;//排序方式
     private JButton createItemButton;//按鈕:新增物品
     private JButton deleteItemButton;//按鈕:刪除物品
     private JButton uploadPhotoButton;//按鈕:上傳照片
+    private JButton deletePhotoButton;//按鈕:刪除照片
     private JTextField timeField;//現在日期
     private RecordSystem recordSystem;//系統
 
@@ -126,18 +131,6 @@ public class GUI extends JFrame {
         viewPanel.add(itemViewer);
         scrollPane = new JScrollPane(viewPanel);
 
-//        for (int i = 0; i < ITEM_ROW * ITEM_COLUMN; i++) {
-//            if ((i + 1) % ITEM_COLUMN == 0) {
-//                icons[i / ITEM_COLUMN] = new ImageIcon("");
-////                itemFields[i] = new JLabel(icons[i / ITEM_COLUMN]);
-////            } else {
-////                itemFields[i] = new JLabel();
-//            }
-//            itemPanel.add(itemFields[i]);
-//        }
-
-        //scrollPane = new JScrollPane(itemPanel);
-
         //------create------
         JTextField titleName = new JTextField("名稱");
         JTextField titleType = new JTextField("類型");
@@ -169,6 +162,8 @@ public class GUI extends JFrame {
         //------bottom------
         bottomLabel = new JLabel("底部(test)");
         bottomPanel = new JPanel();
+        photoPanel = new JPanel();
+        photoPanel.setLayout(new GridLayout(1, 4));
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new BorderLayout());
         Date nowTime = new Date();
@@ -184,12 +179,15 @@ public class GUI extends JFrame {
         buttonPanel.add(createItemButton, BorderLayout.EAST);
         buttonPanel.add(deleteItemButton, BorderLayout.WEST);
         uploadPhotoButton = new JButton("上傳照片");
-        uploadPhotoButton.setPreferredSize(new Dimension(20, 20));
         uploadPhotoButton.addActionListener(handler);
+        deletePhotoButton = new JButton("刪除照片");
+        deletePhotoButton.addActionListener(handler);
+        photoPanel.add(uploadPhotoButton);
+        photoPanel.add(deletePhotoButton);           
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.add(timeField, BorderLayout.WEST);
         bottomPanel.add(buttonPanel);
-        bottomPanel.add(uploadPhotoButton);
+        bottomPanel.add(photoPanel);
 
         //------帶進outer------
         updateAll();
@@ -216,11 +214,11 @@ public class GUI extends JFrame {
                 break;
             } catch (NoSuchFileException e) {
                 try {
-                    File records = new File(RECORDS_PATH);
-                    records.mkdirs();
+                    new File(RECORDS_DIR).mkdirs();
+                    File records = new File(RECORDS_FILE);
                     records.createNewFile();
-                    File photos = new File(PHOTOLIST_PATH);
-                    photos.mkdirs();
+                    new File(PHOTOLIST_DIR).mkdirs();
+                    File photos = new File(PHOTOLIST_FILE);
                     photos.createNewFile();
 
                 } catch (IOException iOException) {
@@ -261,6 +259,25 @@ public class GUI extends JFrame {
             case "表格":
 
                 itemTable = new JTable(foodData, tableColumnNames);
+                itemTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+                    @Override
+                    public Component getTableCellRendererComponent(JTable table,
+                            Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+
+                        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+                        ArrayList<Integer> warning_indices = recordSystem.warningFoodsIndices();
+                        System.out.printf("Size of warning: %d, and row is %d\n", warning_indices.size(), row);
+                        if (warning_indices.contains(row)) {
+                            setBackground(table.getBackground());
+                            setForeground(Color.RED);
+                        } else {
+                            setBackground(table.getBackground());
+                            setForeground(table.getForeground());
+                        }       
+                        return this;
+                    }   
+                });
                 scrollPane = new JScrollPane(itemTable);
                 break;
         }
@@ -315,14 +332,14 @@ public class GUI extends JFrame {
 
     private void readFile() throws NoSuchFileException {
         System.out.println("嘗試讀取 records.txt");
-        try (Scanner input = new Scanner(Paths.get(RECORDS_PATH))) {
+        try (Scanner input = new Scanner(Paths.get(RECORDS_FILE))) {
             // read record from file
             recordSystem.clearFoods();
             while (input.hasNext()) { // while there is more to read
                 createFood(input.next(), input.next(), input.next(), input.next());
             }
         } catch (NoSuchFileException noSuchFileException) {
-            throw new NoSuchFileException(RECORDS_PATH);
+            throw new NoSuchFileException(RECORDS_FILE);
         } catch (IOException | NoSuchElementException |
                  IllegalStateException e) {
             e.printStackTrace();
@@ -331,7 +348,7 @@ public class GUI extends JFrame {
 
     private void writeFile() throws FileNotFoundException {
         System.out.println("嘗試寫入檔案");
-        try (Formatter output = new Formatter(RECORDS_PATH)) {
+        try (Formatter output = new Formatter(RECORDS_FILE)) {
             try {
                 // output new record to file; assumes valid input
                 for (int i = 0; i < foodList.size(); i++) {
@@ -354,16 +371,16 @@ public class GUI extends JFrame {
 
     private void readPhotoList() throws NoSuchFileException {
         System.out.println("嘗試讀檔");
-        try (Scanner input = new Scanner(Paths.get(PHOTOLIST_PATH))) {
+        try (Scanner input = new Scanner(Paths.get(PHOTOLIST_FILE))) {
             // read record from file
             photoList = new ArrayList<String>();
-            while (input.hasNext()) { // while there is more to read
-                photoList.add(input.next());
+            while (input.hasNextLine()) { // while there is more to read
+                photoList.add(input.nextLine());
             }
             String[] tmp = photoList.toArray(new String[0]);
             newItemIcon.setListData(tmp);
         } catch (NoSuchFileException noSuchFileException) {
-            throw new NoSuchFileException(PHOTOLIST_PATH);
+            throw new NoSuchFileException(PHOTOLIST_FILE);
         } catch (IOException | NoSuchElementException |
                  IllegalStateException e) {
             e.printStackTrace();
@@ -372,7 +389,7 @@ public class GUI extends JFrame {
 
     private void writePhotoList() throws FileNotFoundException {
         System.out.println("嘗試寫入檔案");
-        try (Formatter output = new Formatter(PHOTOLIST_PATH)) {
+        try (Formatter output = new Formatter(PHOTOLIST_FILE)) {
             try {
                 // output new record to file; assumes valid input
                 for (int i = 0; i < photoList.size(); i++) {
@@ -386,6 +403,20 @@ public class GUI extends JFrame {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void deletePhoto()  {
+
+        if(photoList!=null){
+            photoList.remove(newItemIcon.getSelectedIndex());
+            try{
+                writePhotoList();
+                readPhotoList();
+            }catch(FileNotFoundException | NoSuchFileException e){
+                    e.printStackTrace();
+            }
+        }
+
     }
 
     private Icon createIcon(String icon_name){
@@ -432,26 +463,13 @@ public class GUI extends JFrame {
                 break;
         }
         recordSystem.sortFood(sortMethod);
-//        for(int i = 1;allFood[i] != null;i++)
-//        {
-//            for(int j = 0; j<i;j++)
-//            {
-//                switch (sortMethod) {
-//                    case "類型":
-//                        if (allFood[i].getType()!=allFood[j].getType())
-//                        {
-//
-//                        }
-//                        break;
-//                    case "有效日期":
-//                        if (allFood[i].getExpiryDate()!=allFood[j].getExpiryDate())
-//                        {
-//
-//                        }
-//                        break;
-//                }
-//            }
-//        }
+        try{
+            writeFile();
+            updateAll();
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
+        
     }
 
     private void createAction() throws FileNotFoundException //新增紀錄
@@ -461,12 +479,14 @@ public class GUI extends JFrame {
         String type = newItemType.getText();
         String date_str = newItemDate.getText();
         String icon_name = newItemIcon.getSelectedValue();
-        ;
+        if(name != null && type != null && date_str != null && icon_name != null  ){
+            createFood(name, type, date_str, icon_name);
+            recordSystem.expiriedNotify();
+            writeFile();
+            updateAll();
+        }
 //            String icon_path = newItemIcon.getText();
-        createFood(name, type, date_str, icon_name);
-        writeFile();
-
-        updateAll();
+        
 
     }
 
@@ -526,6 +546,8 @@ public class GUI extends JFrame {
                 }
             } else if (e.getSource() == uploadPhotoButton) {
                 uploadAction();
+            }else if(e.getSource() == deletePhotoButton){
+                deletePhoto();
             }
         }
     }

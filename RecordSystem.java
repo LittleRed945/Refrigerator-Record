@@ -56,16 +56,28 @@ public class RecordSystem extends Notify{
         
     }
     public void expiriedNotify(){
+        if(foods.size() == 0){
+            return;
+        }
         try{
             Date current_time= new Date();
-
-            for(int i=0;i<foods.size();++i){
-                long diffInMillies = foods.get(i).getExpiryDate().getTime() - current_time.getTime();
-                long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-                if(diff <= 1 && diff >= 0){
-                    String msg = "Your "+foods.get(i).getName() + " is about to expiried!";
-                    windowsNotify(msg);
+            String items = "";
+            
+            ArrayList<Integer> warning_indices = warningFoodsIndices();
+            for(int i=0;i<warning_indices.size();++i){
+                if(items.length() == 0){
+                    items += foods.get(warning_indices.get(i) ).getName();
+                }else if(items.length() < 15){
+                    items += ", " + foods.get(warning_indices.get(i) ).getName();
                 }
+               
+            }
+            if(items.length() >= 15){
+                items +="...";
+            }
+            if(items.length() > 0){
+                String msg = "Your "+ items + " is about to expiried!";
+                windowsNotify(msg);
             }
         }catch(AWTException aWTException){  
             System.out.println(aWTException.getMessage());
@@ -77,12 +89,29 @@ public class RecordSystem extends Notify{
         Food tempFood;
         switch (sortMethod) {
             case "類型":
+                System.out.println("類型排序");
                 foods.sort(Comparator.comparing(Food::getType));
                 break;
             case "有效日期":
+                System.out.println("date sort");
                 foods.sort(Comparator.comparing(Food::getExpiryDate));
                 break;
         }
         
+    }
+    public ArrayList<Integer> warningFoodsIndices(){
+        ArrayList<Integer> indices = new ArrayList<Integer>();
+        Date current_time= new Date();
+        for(int i=0;i<foods.size();++i){
+             long diffInMillies = foods.get(i).getExpiryDate().getTime() - current_time.getTime();
+                long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            if(diff <= 1 && diff >= 0){
+                System.out.printf("index:%d\n",i);
+                indices.add(i);
+            }else if(diff < 0){
+                foods.remove(i);
+            }
+        }
+        return indices;
     }
 }
